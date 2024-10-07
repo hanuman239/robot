@@ -90,22 +90,13 @@
         // Initialize RiveScript bot
         const bot = new RiveScript();
 
-        // Define your RiveScript content directly in the HTML
-        const brain = `
-            ! version = 2.0
-
-            + hello
-            - Hello! How can I assist you?
-
-            + thank you
-            - You're welcome! Feel free to ask anything else.
-
-            + what is your name
-            - My name is Chatbot.
-        `;
-
-        bot.stream(brain);
-        bot.sortReplies();
+        // Load the RiveScript content from an external file
+        fetch("brain.rive")
+            .then(response => response.text())
+            .then(text => {
+                bot.stream(text);
+                bot.sortReplies();
+            });
 
         // Function to handle user input and bot reply
         document.querySelector("#send").addEventListener("click", () => {
@@ -119,18 +110,8 @@
                 
                 document.querySelector("#input").value = "";
                 document.querySelector("#output").scrollTop = document.querySelector("#output").scrollHeight;
-
-                // Speak the bot's reply
-                speak(reply);
             }
         });
-
-        // Function to speak text
-        function speak(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "en-US"; // Set to English language
-            window.speechSynthesis.speak(utterance);
-        }
 
         // Allow using voice input
         document.querySelector("#voice").addEventListener("click", () => {
