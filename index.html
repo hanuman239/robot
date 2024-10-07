@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Myanmar Chatbot with RiveScript</title>
+    <title>English Chatbot with RiveScript</title>
   
     <style>
         body {
@@ -77,7 +77,7 @@
 </head>
 <body>
 
-    <h1>Myanmar Chatbot with RiveScript</h1>
+    <h1>English Chatbot with RiveScript</h1>
 
     <div id="chatbox">
         <div id="output"></div>
@@ -94,14 +94,14 @@
         const brain = `
             ! version = 2.0
 
-            + မင်္ဂလာပါ
-            - မင်္ဂလာပါ! ဘယ်လိုကူညီပေးရမလဲ?
+            + hello
+            - Hello! How can I assist you?
 
-            + ကျေးဇူးတင်ပါတယ်
-            - အေးပါတယ်! ကျေးဇူးပြု၍ ထပ်မံမေးမြန်းပါ။
+            + thank you
+            - You're welcome! Feel free to ask anything else.
 
-            + အမည်ကဘာလဲ
-            - ငါ့နာမည်က Chatbot ပါ။
+            + what is your name
+            - My name is Chatbot.
         `;
 
         bot.stream(brain);
@@ -119,13 +119,23 @@
                 
                 document.querySelector("#input").value = "";
                 document.querySelector("#output").scrollTop = document.querySelector("#output").scrollHeight;
+
+                // Speak the bot's reply
+                speak(reply);
             }
         });
+
+        // Function to speak text
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "en-US"; // Set to English language
+            window.speechSynthesis.speak(utterance);
+        }
 
         // Allow using voice input
         document.querySelector("#voice").addEventListener("click", () => {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = "my-MM"; // Set recognition language to Myanmar
+            recognition.lang = "en-US"; // Set recognition language to English
             recognition.start();
 
             recognition.onresult = (event) => {
