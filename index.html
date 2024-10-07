@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myanmar Chatbot with RiveScript</title>
+  
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #3366cc;
+            margin-bottom: 20px;
+        }
+
+        #chatbox {
+            width: 90%;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #output {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 110px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #3366cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #004d99;
+        }
+
+        p {
+            margin: 5px 0;
+        }
+
+        p b {
+            color: #3366cc;
+        }
+    </style>
+
+    <!-- Include RiveScript.js from CDN -->
+    <script src="https://unpkg.com/rivescript@2.1.0/dist/rivescript.min.js"></script>
+</head>
+<body>
+
+    <h1>Myanmar Chatbot with RiveScript</h1>
+
+    <div id="chatbox">
+        <div id="output"></div>
+        <input type="text" id="input" placeholder="Type something..." autocomplete="off">
+        <button id="send">Send</button>
+        <button id="voice">Use Voice</button>
+    </div>
+
+    <script>
+        // Initialize RiveScript bot
+        const bot = new RiveScript();
+
+        // Define your RiveScript content directly in the HTML
+        const brain = `
+            ! version = 2.0
+
+            + မင်္ဂလာပါ
+            - မင်္ဂလာပါ! ဘယ်လိုကူညီပေးရမလဲ?
+
+            + ကျေးဇူးတင်ပါတယ်
+            - အေးပါတယ်! ကျေးဇူးပြု၍ ထပ်မံမေးမြန်းပါ။
+
+            + အမည်ကဘာလဲ
+            - ငါ့နာမည်က Chatbot ပါ။
+        `;
+
+        bot.stream(brain);
+        bot.sortReplies();
+
+        // Function to handle user input and bot reply
+        document.querySelector("#send").addEventListener("click", () => {
+            const input = document.querySelector("#input").value;
+            if (input.trim() !== "") {
+                document.querySelector("#output").innerHTML += `<p><b>User:</b> ${input}</p>`;
+                
+                // Get reply from RiveScript bot
+                const reply = bot.reply("local-user", input);
+                document.querySelector("#output").innerHTML += `<p><b>Bot:</b> ${reply}</p>`;
+                
+                document.querySelector("#input").value = "";
+                document.querySelector("#output").scrollTop = document.querySelector("#output").scrollHeight;
+            }
+        });
+
+        // Allow using voice input
+        document.querySelector("#voice").addEventListener("click", () => {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = "my-MM"; // Set recognition language to Myanmar
+            recognition.start();
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.querySelector("#input").value = transcript; // Fill input with recognized speech
+                document.querySelector("#send").click(); // Send the message automatically
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+            };
+        });
+
+        // Send message on Enter key press
+        document.querySelector("#input").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                document.querySelector("#send").click();
+            }
+        });
+    </script>
+</body>
+</html>
