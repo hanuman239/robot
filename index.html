@@ -1,141 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Chatbot with RiveScript</title>
-  
+    <title>မြန်မာစကား Bot</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             text-align: center;
-            color: #3366cc;
-            margin-bottom: 20px;
+            padding: 50px;
         }
 
-        #chatbox {
-            width: 90%;
-            max-width: 600px;
-            margin: auto;
+        .container {
+            background-color: white;
             padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        #output {
-            height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        input[type="text"] {
-            width: calc(100% - 110px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         button {
-            padding: 10px 15px;
-            background-color: #3366cc;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
             cursor: pointer;
-            font-size: 14px;
+            border-radius: 5px;
         }
 
-        button:hover {
-            background-color: #004d99;
+        button:disabled {
+            background-color: grey;
         }
 
         p {
-            margin: 5px 0;
-        }
-
-        p b {
-            color: #3366cc;
+            font-size: 18px;
+            margin-top: 20px;
         }
     </style>
-
-    <!-- Include RiveScript.js from CDN -->
-    <script src="https://unpkg.com/rivescript@2.1.0/dist/rivescript.min.js"></script>
 </head>
 <body>
-
-    <h1>English Chatbot with RiveScript</h1>
-
-    <div id="chatbox">
-        <div id="output"></div>
-        <input type="text" id="input" placeholder="Type something..." autocomplete="off">
-        <button id="send">Send</button>
-        <button id="voice">Use Voice</button>
+    <div class="container">
+        <h1>မြန်မာစကား Bot</h1>
+        <button id="start-btn">စတင်မည်</button>
+        <p id="transcript"></p>
+        <button id="speak-btn" disabled>Bot အသံထွက်</button>
     </div>
 
     <script>
-        // Initialize RiveScript bot
-        const bot = new RiveScript();
+        const startBtn = document.getElementById('start-btn');
+        const speakBtn = document.getElementById('speak-btn');
+        const transcriptDisplay = document.getElementById('transcript');
 
-        // Load the RiveScript content from an external file
-        fetch("brain.rive")
-            .then(response => response.text())
-            .then(text => {
-                bot.stream(text);
-                bot.sortReplies();
-            });
+        // Speech recognition for input
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'my-MM';
 
-        // Function to handle user input and bot reply
-        document.querySelector("#send").addEventListener("click", () => {
-            const input = document.querySelector("#input").value;
-            if (input.trim() !== "") {
-                document.querySelector("#output").innerHTML += `<p><b>User:</b> ${input}</p>`;
-                
-                // Get reply from RiveScript bot
-                const reply = bot.reply("local-user", input);
-                document.querySelector("#output").innerHTML += `<p><b>Bot:</b> ${reply}</p>`;
-                
-                document.querySelector("#input").value = "";
-                document.querySelector("#output").scrollTop = document.querySelector("#output").scrollHeight;
-            }
-        });
-
-        // Allow using voice input
-        document.querySelector("#voice").addEventListener("click", () => {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = "en-US"; // Set recognition language to English
+        startBtn.addEventListener('click', () => {
             recognition.start();
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.querySelector("#input").value = transcript; // Fill input with recognized speech
-                document.querySelector("#send").click(); // Send the message automatically
-            };
-
-            recognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-            };
+            startBtn.textContent = 'နားထောင်နေသည်...';
         });
 
-        // Send message on Enter key press
-        document.querySelector("#input").addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                document.querySelector("#send").click();
-            }
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            transcriptDisplay.textContent = `သင့်ရဲ့ စကား: ${transcript}`;
+            speakBtn.disabled = false;
+
+            // Store transcript in localStorage (since no database is used)
+            saveTranscript(transcript);
+            startBtn.textContent = 'စတင်မည်';
+        };
+
+        // Text to Speech for output
+        speakBtn.addEventListener('click', () => {
+            const msg = new SpeechSynthesisUtterance(transcriptDisplay.textContent);
+            msg.lang = 'my-MM';
+            window.speechSynthesis.speak(msg);
         });
+
+        function saveTranscript(transcript) {
+            let transcripts = JSON.parse(localStorage.getItem('transcripts')) || [];
+            transcripts.push(transcript);
+            localStorage.setItem('transcripts', JSON.stringify(transcripts));
+            console.log('Transcript saved:', transcript);
+        }
     </script>
 </body>
 </html>
