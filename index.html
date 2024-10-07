@@ -53,10 +53,10 @@
         const speakBtn = document.getElementById('speak-btn');
         const transcriptDisplay = document.getElementById('transcript');
 
-        // Speech recognition for input
+        // Speech recognition for input (မြန်မာဘာသာစကား input)
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
-        recognition.lang = 'my-MM';
+        recognition.lang = 'my-MM'; // မြန်မာဘာသာစကားနားထောင်မည်
 
         startBtn.addEventListener('click', () => {
             recognition.start();
@@ -67,25 +67,31 @@
             const transcript = event.results[0][0].transcript;
             transcriptDisplay.textContent = `သင့်ရဲ့ စကား: ${transcript}`;
             speakBtn.disabled = false;
-
-            // Store transcript in localStorage (since no database is used)
-            saveTranscript(transcript);
             startBtn.textContent = 'စတင်မည်';
         };
 
-        // Text to Speech for output
+        // Text to Speech (မြန်မာအသံထွက်)
         speakBtn.addEventListener('click', () => {
-            const msg = new SpeechSynthesisUtterance(transcriptDisplay.textContent);
-            msg.lang = 'my-MM';
+            const textToSpeak = transcriptDisplay.textContent.replace('သင့်ရဲ့ စကား: ', '');
+            const msg = new SpeechSynthesisUtterance(textToSpeak);
+
+            // Speech Synthesis API supports only a limited set of languages.
+            // Set language to Burmese, if the browser supports it.
+            msg.lang = 'my-MM'; // မြန်မာဘာသာ အသံထွက်မည်
             window.speechSynthesis.speak(msg);
         });
 
-        function saveTranscript(transcript) {
-            let transcripts = JSON.parse(localStorage.getItem('transcripts')) || [];
-            transcripts.push(transcript);
-            localStorage.setItem('transcripts', JSON.stringify(transcripts));
-            console.log('Transcript saved:', transcript);
-        }
+        // Temporary solution: check for supported languages
+        window.speechSynthesis.onvoiceschanged = () => {
+            const voices = window.speechSynthesis.getVoices();
+            console.log('Available voices:', voices);
+
+            // Check if Burmese (my-MM) is available in the current browser
+            const burmeseVoice = voices.find(voice => voice.lang === 'my-MM');
+            if (!burmeseVoice) {
+                console.log("Burmese voice not supported by this browser.");
+            }
+        };
     </script>
 </body>
 </html>
